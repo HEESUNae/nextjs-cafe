@@ -1,95 +1,68 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+'use client';
+import Image from 'next/image';
+import styles from '../styles/page.module.scss';
+import Button from '@/components/Button';
+import { useState } from 'react';
+
+const coffeeMenu = [
+  {
+    name: '카페모카',
+    temperature: 'ICED',
+    description: '에스프레소에 부드러운 우유와 진한 초콜릿 풍미가 어우러진 커피',
+    image: '/images/coffee/moca-iced.png',
+  },
+  {
+    name: '바닐라 라떼',
+    temperature: 'ICED',
+    description: '에스프레소에 부드러운 우유와 달콤한 바닐라 향이 가득한 커피',
+    image: '/images/coffee/moca-iced.png',
+  },
+  {
+    name: '카라멜 마끼아또',
+    temperature: 'ICED',
+    description:
+      '에스프레소를 바닐라 향이 가득한 부드러운 우유에 점을 찍듯이 부은 후 달콤한 카라멜 소스를 드리즐한 커피',
+    image: '/images/coffee/moca-iced.png',
+  },
+];
+
+const menus = ['커피', '음료', '스무디', '디저트', '주스'];
 
 export default function Home() {
+  const [isMenu, setIsMenu] = useState([true, ...Array.from({ length: menus.length - 1 }).fill(false)]);
+
+  const handleMenuTab = (idx: number) => {
+    let temp = Array.from({ length: menus.length }).fill(false);
+    temp[idx] = true;
+    setIsMenu(temp);
+  };
+
   return (
     <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.tsx</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
+      <div className={styles.menuContiner}>
+        <div className={styles.menuTabBtn}>
+          {menus.map((menu, idx) => (
+            <Button
+              key={menu}
+              style={isMenu[idx] ? 'menuBtnActive' : 'menuBtn'}
+              title={menu}
+              onClick={() => handleMenuTab(idx)}
             />
-          </a>
+          ))}
         </div>
+        <ul>
+          {coffeeMenu.map((coffee) => (
+            <li key={coffee.name}>
+              <Image src={coffee.image} width={200} height={200} priority alt="" />
+              <p>
+                {coffee.name} {coffee.temperature}
+              </p>
+              {/* <p>{coffee.description}</p> */}
+            </li>
+          ))}
+        </ul>
       </div>
-
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+      <div className={styles.calc}></div>
     </main>
   );
 }
