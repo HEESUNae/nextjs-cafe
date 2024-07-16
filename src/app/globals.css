@@ -22,7 +22,7 @@ html {
   padding: 0;
   font-size: 1.4rem;
   color: #222;
-  font-family: 'Wanted Sans', 'san-serif';
+  font-family: 'Wanted Sans', 'Inter', 'san-serif';
   -webkit-font-smoothing: antialiased;
   box-sizing: border-box;
 }
@@ -32,7 +32,15 @@ a {
 li {
   list-style: none;
 }
-
+img {
+  -webkit-user-drag: none;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: relative;
+}
 header {
   padding: 1.6rem;
   background: repeating-linear-gradient(45deg, #705438, #6f4c27 10px);

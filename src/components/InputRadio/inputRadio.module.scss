@@ -1,0 +1,22 @@
+.label {
+  input[type='radio'] {
+    display: none;
+  }
+
+  div {
+    width: 9rem;
+    padding: 0.8rem;
+    font-size: 1.3rem;
+    border-radius: 3rem;
+    background-color: #eee;
+    color: #888;
+    font-weight: 600;
+    cursor: pointer;
+    border: 0;
+    text-align: center;
+    &.active {
+      background-color: #ed7a00;
+      color: #fff;
+    }
+  }
+}

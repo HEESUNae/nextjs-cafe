@@ -10,4 +10,4 @@
 
 ### 기술 스택
 
-Next.js, SCSS
+Next.js, TypeScript, SCSS

@@ -1,0 +1,23 @@
+.label {
+  input[type='checkbox'] {
+    display: none;
+  }
+  div {
+    background-color: #eee;
+    border: 0.2rem solid #eee;
+    padding: 1rem;
+    border-radius: 1rem;
+    text-align: center;
+    font-weight: 600;
+    span {
+      color: #888;
+    }
+    &.active {
+      border: 0.2rem solid #ed7a00;
+      span {
+        color: #ed7a00;
+      }
+      background-color: #fff5ed;
+    }
+  }
+}
