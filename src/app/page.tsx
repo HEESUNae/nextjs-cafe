@@ -20,6 +20,7 @@ export default function Home() {
     shot: false,
     syrup: false,
     ice: false,
+    drinkCount: 1,
   }); // 모달에서 선택한 커피 옵션
   const [order, setOrder] = useState<OrderType[]>([]); // 주문 리스트
 
@@ -31,19 +32,13 @@ export default function Home() {
   };
 
   // 클릭한 커피 리스트 (모달 오픈)
-  const handleSelectCoffee = (
-    name: string,
-    description: string,
-    image: string,
-    temperature: Temperature[],
-    price: number
-  ) => {
-    setSelectCoffee({ name, description, image, temperature, price }); // 클릭한 커피 모달 내용으로 보여줌
-    setOption((prev) => ({ ...prev, temperature: temperature[0] })); // 온도 맨 첫번째로 디폴트 선택
+  const handleSelectCoffee = (coffeeItem: SelectCoffeeType) => {
+    setSelectCoffee(coffeeItem); // 클릭한 커피 모달 내용으로 보여줌
+    setOption((prev) => ({ ...prev, temperature: coffeeItem.temperature[0] })); // 온도 맨 첫번째로 디폴트 선택
   };
 
   // 선택한 커피 옵션값 초기화
-  const headleResetOrder = () => {
+  const headleResetOption = () => {
     setSelectCoffee(null);
     setOption({
       temperature: '',
@@ -51,15 +46,39 @@ export default function Home() {
       shot: false,
       syrup: false,
       ice: false,
+      drinkCount: 1,
     });
   };
 
   // 주문 리스트에 커피 추가
   const handleOrderCoffee = () => {
     if (selectCoffee) {
-      const temp: OrderType = { ...selectCoffee, ...isOption };
-      setOrder((prev) => [...prev, temp]);
-      headleResetOrder();
+      let calcPrice: number = selectCoffee.price; // 기본 커피 금액
+      if (isOption.ice) calcPrice += 500;
+      if (isOption.shot) calcPrice += 500;
+      if (isOption.syrup) calcPrice += 500;
+
+      // 주문리스트에 같은 옵션의 주문이 있는지 확인
+      const someIdx = order.findIndex(
+        (item) =>
+          item.name === selectCoffee.name &&
+          item.ice === isOption.ice &&
+          item.shot === isOption.shot &&
+          item.syrup === isOption.syrup &&
+          item.take === isOption.take &&
+          item.temperature === isOption.temperature
+      );
+
+      if (someIdx > -1) {
+        // 기존 주문에 추가
+        order[someIdx].drinkCount++;
+        order[someIdx].price += calcPrice;
+      } else {
+        // 주문리스트에 주문 내용 추가
+        const newOrder = { ...selectCoffee, ...isOption, price: calcPrice };
+        setOrder((prev) => [...prev, newOrder]);
+      }
+      headleResetOption();
     }
   };
 
@@ -84,15 +103,10 @@ export default function Home() {
             <div className={`${styles.tabpanel} ${isMenu[0] && styles.active}`}>
               <ul>
                 {coffeeMenu.map((item) => (
-                  <li
-                    key={item.name}
-                    onClick={() =>
-                      handleSelectCoffee(item.name, item.description, item.image, item.temperature, item.price)
-                    }
-                  >
+                  <li key={item.name} onClick={() => handleSelectCoffee(item)}>
                     <Image src={item.image} width={200} height={200} priority alt="" />
-                    <p>{item.name}</p>
-                    <p>{item.price}</p>
+                    <h3>{item.name}</h3>
+                    <span>{item.price.toLocaleString()} 원</span>
                   </li>
                 ))}
               </ul>
@@ -107,6 +121,7 @@ export default function Home() {
         {/* 주문리스트 */}
         <div className={styles.orderContainer}>
           <ul className={styles.calc}>
+            {order.length === 0 && <div>주문해주세요</div>}
             {order.map((item, idx) => (
               <li key={idx}>
                 <h3>
@@ -114,10 +129,10 @@ export default function Home() {
                 </h3>
                 <div className={styles.menuCountBtns}>
                   <Button title="-" style="numberBtn" />
-                  <span>1</span>
+                  <span>{item.drinkCount}</span>
                   <Button title="+" style="numberBtn" />
                 </div>
-                <p className={styles.price}>{item.price} 원</p>
+                <p className={styles.price}>{item.price.toLocaleString()} 원</p>
                 <p className={styles.options}>
                   {item.ice && '얼음많이(+500원),'} {item.shot && '샷 추가(+500원),'}
                   {item.syrup && '시럽추가(+500원),'} {item.take === 'take' ? '테이크아웃' : '매장'}
@@ -130,14 +145,9 @@ export default function Home() {
             <p>
               <span>
                 {order
-                  .map((item) => {
-                    let calc = item.price;
-                    if (item.ice) calc += 500;
-                    if (item.shot) calc += 500;
-                    if (item.syrup) calc += 500;
-                    return calc;
-                  })
-                  .reduce((a, v) => a + v, 0)}
+                  .map((item) => item.price)
+                  .reduce((a, v) => a + v, 0)
+                  .toLocaleString()}
               </span>{' '}
               원
             </p>
@@ -158,7 +168,7 @@ export default function Home() {
                 <figcaption>
                   <h3>{selectCoffee.name}</h3>
                   <p>{selectCoffee.description}</p>
-                  <p>{selectCoffee.price}</p>
+                  <p>{selectCoffee.price.toLocaleString()} 원</p>
                 </figcaption>
               </figure>
             </div>
@@ -219,7 +229,7 @@ export default function Home() {
               </li>
             </ul>
             <div className={styles.modalFooter}>
-              <Button title="닫기" style="defaultBtn" onClick={headleResetOrder} />
+              <Button title="닫기" style="defaultBtn" onClick={headleResetOption} />
               <Button title="담기" onClick={handleOrderCoffee} />
             </div>
           </div>

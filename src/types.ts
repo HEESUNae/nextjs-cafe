@@ -16,6 +16,7 @@ export interface IsOptionType {
   shot: boolean;
   syrup: boolean;
   ice: boolean;
+  drinkCount: number;
 }
 
 // 주문 리스트 type
