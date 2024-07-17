@@ -4,16 +4,17 @@
   }
   div {
     background-color: #eee;
-    border: 0.2rem solid #eee;
+    border: 0.1rem solid #eee;
     padding: 1rem;
     border-radius: 1rem;
     text-align: center;
     font-weight: 600;
+    min-width: 8.4rem;
     span {
       color: #888;
     }
     &.active {
-      border: 0.2rem solid #ed7a00;
+      border: 0.1rem solid #ffddc1;
       span {
         color: #ed7a00;
       }

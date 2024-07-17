@@ -25,6 +25,7 @@ html {
   font-family: 'Wanted Sans', 'Inter', 'san-serif';
   -webkit-font-smoothing: antialiased;
   box-sizing: border-box;
+  word-break: keep-all;
 }
 a {
   text-decoration: none;
@@ -43,7 +44,7 @@ body {
 }
 header {
   padding: 1.6rem;
-  background: repeating-linear-gradient(45deg, #705438, #6f4c27 10px);
+  background: repeating-linear-gradient(45deg, #705438, #6f4c27 6px);
 }
 .header-container {
   display: flex;

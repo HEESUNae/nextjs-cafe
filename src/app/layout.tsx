@@ -21,7 +21,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <header>
           <div className="header-container">
-            <Image src={'/images/coffee.jpg'} width={40} height={40} alt="" />
+            <Image src={'/images/logo.jpg'} width={40} height={40} alt="" />
             <h1>
               <Link href={'/'}>Cafe Lao</Link>
             </h1>

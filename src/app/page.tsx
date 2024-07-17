@@ -1,18 +1,17 @@
 'use client';
-import Image from 'next/image';
 import styles from '../styles/page.module.scss';
 import Button from '@/components/Button';
-import { useEffect, useState } from 'react';
-import InputRadio from '@/components/InputRadio';
-import InputCheckbox from '@/components/InputCheckbox';
-import { Modal } from '@/components/Modal';
-import { IsOptionType, OrderType, SelectCoffeeType, Temperature } from '@/types';
-import { coffeeMenu } from '@/api/menu';
+import { useState } from 'react';
+import { IsOptionType, OrderType, SelectCoffeeType } from '@/types';
+import { adeMenu, coffeeMenu, drinksMenu, teaMenu } from '@/api/menu';
+import { CoffeeOptionModal } from '@/containers/CoffeeOptionModal';
+import { MenuTabPanel } from '@/containers/MenuTabPanel';
+import { OrderList } from '@/containers/OrderList';
 
-const tabMenus: string[] = ['커피', '음료', '스무디', '디저트', '주스'];
+const tabMenus: string[] = ['커피', '주스', '에이드', '티'];
 
 export default function Home() {
-  const [isMenu, setIsMenu] = useState([true, ...Array.from({ length: tabMenus.length - 1 }).fill(false)]); //  메뉴 탭
+  const [isMenu, setIsMenu] = useState<boolean[]>([true, false, false, false]); //  메뉴 탭
   const [selectCoffee, setSelectCoffee] = useState<SelectCoffeeType | null>(null); // 선택한 커피 (모달 내용)
   const [isOption, setOption] = useState<IsOptionType>({
     temperature: '',
@@ -24,20 +23,28 @@ export default function Home() {
   }); // 모달에서 선택한 커피 옵션
   const [order, setOrder] = useState<OrderType[]>([]); // 주문 리스트
 
-  // 메뉴 탭 액티브
+  /**
+   * 메뉴 탭 액티브
+   * @param idx 활성화 된 탭의 idx
+   */
   const handleMenuTab = (idx: number) => {
-    let temp = Array.from({ length: tabMenus.length }).fill(false);
+    let temp = [false, false, false, false];
     temp[idx] = true;
     setIsMenu(temp);
   };
 
-  // 클릭한 커피 리스트 (모달 오픈)
-  const handleSelectCoffee = (coffeeItem: SelectCoffeeType) => {
-    setSelectCoffee(coffeeItem); // 클릭한 커피 모달 내용으로 보여줌
-    setOption((prev) => ({ ...prev, temperature: coffeeItem.temperature[0] })); // 온도 맨 첫번째로 디폴트 선택
+  /**
+   * 클릭한 커피 리스트 (클릭하면 값이 담겨서 모달 오픈)
+   * @param selectItem: 선택한 커피 리스트
+   */
+  const handleSelectCoffee = (selectItem: SelectCoffeeType) => {
+    setSelectCoffee(selectItem); // 클릭한 커피 모달 내용으로 보여줌
+    setOption((prev) => ({ ...prev, temperature: selectItem.temperature[0] })); // 온도 맨 첫번째로 디폴트 선택
   };
 
-  // 선택한 커피 옵션값 초기화
+  /**
+   * 커피 옵션값 초기화
+   */
   const headleResetOption = () => {
     setSelectCoffee(null);
     setOption({
@@ -50,11 +57,13 @@ export default function Home() {
     });
   };
 
-  // 주문 리스트에 커피 추가
+  /**
+   * 주문 리스트에 커피 추가
+   */
   const handleOrderCoffee = () => {
     if (selectCoffee) {
+      // 주문 금액 계산
       let calcPrice: number = selectCoffee.price; // 기본 커피 금액
-      if (isOption.ice) calcPrice += 500;
       if (isOption.shot) calcPrice += 500;
       if (isOption.syrup) calcPrice += 500;
 
@@ -71,8 +80,14 @@ export default function Home() {
 
       if (someIdx > -1) {
         // 기존 주문에 추가
-        order[someIdx].drinkCount++;
-        order[someIdx].price += calcPrice;
+        setOrder((prev) => {
+          const updatedOrder = [...prev];
+          updatedOrder[someIdx] = {
+            ...updatedOrder[someIdx],
+            drinkCount: updatedOrder[someIdx].drinkCount + 1,
+          };
+          return updatedOrder;
+        });
       } else {
         // 주문리스트에 주문 내용 추가
         const newOrder = { ...selectCoffee, ...isOption, price: calcPrice };
@@ -80,6 +95,46 @@ export default function Home() {
       }
       headleResetOption();
     }
+  };
+
+  /**
+   * 주문 리스트 계산
+   * @param item 커피를 +,- 버튼을 눌러 추가주문 할 경우 대상이 되는 아이템
+   * @param someIdx 주문한 메뉴가 이미 주문리스트에 있는 경우 idx 반환
+   * @param state 'increase' 추가, 'decrease' 삭제
+   * @returns
+   */
+  const handleMenuCount = (item: OrderType, someIdx: number, state: string) => {
+    // 0 일떄 주문리스트에서 삭제
+    if (state === 'decrease' && item.drinkCount - 1 === 0) {
+      setOrder(order.filter((order) => order !== item));
+      return;
+    }
+
+    // 주문리스트에서 커피 추가/삭제시 가격 변경
+    setOrder((prev) => {
+      const updatedOrder = [...prev];
+      updatedOrder[someIdx] = {
+        ...updatedOrder[someIdx],
+        drinkCount: state === 'increase' ? updatedOrder[someIdx].drinkCount + 1 : updatedOrder[someIdx].drinkCount - 1,
+        price:
+          state === 'increase'
+            ? (item.price / item.drinkCount) * (item.drinkCount + 1)
+            : (item.price / item.drinkCount) * (item.drinkCount - 1),
+      };
+      return updatedOrder;
+    });
+  };
+
+  /**
+   * 총 결제 금액 계산
+   * @returns
+   */
+  const calcTotalPrice = () => {
+    return order
+      .map((item) => item.price)
+      .reduce((a, v) => a + v, 0)
+      .toLocaleString();
   };
 
   return (
@@ -101,139 +156,45 @@ export default function Home() {
           {/* 메뉴 탭 컨텐츠 */}
           <div className={styles.menuTabPanel}>
             <div className={`${styles.tabpanel} ${isMenu[0] && styles.active}`}>
-              <ul>
-                {coffeeMenu.map((item) => (
-                  <li key={item.name} onClick={() => handleSelectCoffee(item)}>
-                    <Image src={item.image} width={200} height={200} priority alt="" />
-                    <h3>{item.name}</h3>
-                    <span>{item.price.toLocaleString()} 원</span>
-                  </li>
-                ))}
-              </ul>
+              <MenuTabPanel menuItem={coffeeMenu} handleSelectCoffee={handleSelectCoffee} />
             </div>
-            <div className={`${styles.tabpanel} ${isMenu[1] && styles.active}`}>음료 컨텐츠</div>
-            <div className={`${styles.tabpanel} ${isMenu[2] && styles.active}`}>스무디 컨텐츠</div>
-            <div className={`${styles.tabpanel} ${isMenu[3] && styles.active}`}>디저트 컨텐츠</div>
-            <div className={`${styles.tabpanel} ${isMenu[4] && styles.active}`}>주스 컨텐츠</div>
+            <div className={`${styles.tabpanel} ${isMenu[1] && styles.active}`}>
+              <MenuTabPanel menuItem={drinksMenu} handleSelectCoffee={handleSelectCoffee} />
+            </div>
+            <div className={`${styles.tabpanel} ${isMenu[2] && styles.active}`}>
+              <MenuTabPanel menuItem={adeMenu} handleSelectCoffee={handleSelectCoffee} />
+            </div>
+            <div className={`${styles.tabpanel} ${isMenu[3] && styles.active}`}>
+              <MenuTabPanel menuItem={teaMenu} handleSelectCoffee={handleSelectCoffee} />
+            </div>
           </div>
         </div>
 
         {/* 주문리스트 */}
         <div className={styles.orderContainer}>
           <ul className={styles.calc}>
-            {order.length === 0 && <div>주문해주세요</div>}
-            {order.map((item, idx) => (
-              <li key={idx}>
-                <h3>
-                  {item.name} {item.temperature}
-                </h3>
-                <div className={styles.menuCountBtns}>
-                  <Button title="-" style="numberBtn" />
-                  <span>{item.drinkCount}</span>
-                  <Button title="+" style="numberBtn" />
-                </div>
-                <p className={styles.price}>{item.price.toLocaleString()} 원</p>
-                <p className={styles.options}>
-                  {item.ice && '얼음많이(+500원),'} {item.shot && '샷 추가(+500원),'}
-                  {item.syrup && '시럽추가(+500원),'} {item.take === 'take' ? '테이크아웃' : '매장'}
-                </p>
-              </li>
-            ))}
+            <OrderList order={order} handleMenuCount={handleMenuCount} />
           </ul>
           <div className={styles.totalCalc}>
             <p>총 결제 금액</p>
             <p>
-              <span>
-                {order
-                  .map((item) => item.price)
-                  .reduce((a, v) => a + v, 0)
-                  .toLocaleString()}
-              </span>{' '}
-              원
+              <span>{calcTotalPrice()}</span> 원
             </p>
           </div>
-          <Button title="전체삭제" style="defaultBtn" />
-          <Button title="계산하기" />
+          <Button title="전체삭제" style="defaultBtn" onClick={() => setOrder([])} />
+          <Button title="주문하기" />
         </div>
       </section>
 
       {/* 커피 옵션 선택 모달 */}
       {selectCoffee && (
-        <Modal>
-          <h2 className={styles.modalHeader}>옵션을 선택해주세요.</h2>
-          <div className={styles.modalContents}>
-            <div className={styles.coffeeInfoWrap}>
-              <figure>
-                <Image src={selectCoffee.image} width={120} height={120} alt="" />
-                <figcaption>
-                  <h3>{selectCoffee.name}</h3>
-                  <p>{selectCoffee.description}</p>
-                  <p>{selectCoffee.price.toLocaleString()} 원</p>
-                </figcaption>
-              </figure>
-            </div>
-            <ul>
-              <li>
-                <p>온도</p>
-                {selectCoffee.temperature.map((item: Temperature) => (
-                  <InputRadio
-                    checked={isOption.temperature === item}
-                    title={item}
-                    key={item}
-                    onChange={() => setOption((prev) => ({ ...prev, temperature: item }))}
-                  />
-                ))}
-              </li>
-              <li>
-                <p>포장</p>
-                <InputRadio
-                  checked={isOption.take === 'take'}
-                  title="테이크아웃"
-                  onChange={() => setOption((prev) => ({ ...prev, take: 'take' }))}
-                />
-                <InputRadio
-                  checked={isOption.take === 'cafe'}
-                  title="매장"
-                  onChange={() => setOption((prev) => ({ ...prev, take: 'cafe' }))}
-                />
-              </li>
-              <li>
-                <p>옵션</p>
-                <InputCheckbox
-                  checked={isOption.shot}
-                  onChange={() => setOption((prev) => ({ ...prev, shot: !prev.shot }))}
-                >
-                  <span>
-                    샷 추가
-                    <br /> (+ 500원)
-                  </span>
-                </InputCheckbox>
-                <InputCheckbox
-                  checked={isOption.syrup}
-                  onChange={() => setOption((prev) => ({ ...prev, syrup: !prev.syrup }))}
-                >
-                  <span>
-                    시럽 추가
-                    <br /> (+ 500원)
-                  </span>
-                </InputCheckbox>
-                <InputCheckbox
-                  checked={isOption.ice}
-                  onChange={() => setOption((prev) => ({ ...prev, ice: !prev.ice }))}
-                >
-                  <span>
-                    얼음 많이
-                    <br /> (+ 0원)
-                  </span>
-                </InputCheckbox>
-              </li>
-            </ul>
-            <div className={styles.modalFooter}>
-              <Button title="닫기" style="defaultBtn" onClick={headleResetOption} />
-              <Button title="담기" onClick={handleOrderCoffee} />
-            </div>
-          </div>
-        </Modal>
+        <CoffeeOptionModal
+          selectCoffee={selectCoffee}
+          isOption={isOption}
+          setOption={setOption}
+          handleOrderCoffee={handleOrderCoffee}
+          headleResetOption={headleResetOption}
+        />
       )}
     </main>
   );

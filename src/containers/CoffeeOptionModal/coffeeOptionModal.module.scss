@@ -1,0 +1,47 @@
+.modalHeader {
+  font-weight: 600;
+  font-size: 2rem;
+  border-bottom: 0.1rem solid #ededed;
+  padding: 2rem;
+}
+.modalContents {
+  figure {
+    display: flex;
+    border-bottom: 1px solid #ededed;
+    figcaption {
+      padding: 1rem 1rem 1rem 0;
+      h3 {
+        font-size: 1.8rem;
+        margin: 1rem 0;
+      }
+      p {
+        margin: 1rem 0;
+      }
+    }
+  }
+  ul {
+    li {
+      padding: 1.6rem 2rem;
+      border-bottom: 0.1rem solid #ededed;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      p {
+        font-weight: 600;
+        flex: 2;
+        font-size: 1.6rem;
+      }
+    }
+  }
+}
+.modalFooter {
+  padding: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  button {
+    width: 13rem;
+    padding: 1.3rem;
+  }
+}

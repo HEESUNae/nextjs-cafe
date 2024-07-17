@@ -1,0 +1,32 @@
+.defaultOrderList {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  p {
+    font-weight: 600;
+    font-size: 1.6rem;
+    margin-top: 1.6rem;
+  }
+}
+.menuCountBtns {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  grid-column: 2;
+  justify-content: center;
+  span {
+    font-weight: 600;
+  }
+}
+.price {
+  grid-column: 3 / 4;
+  text-align: right;
+  font-weight: 600;
+}
+.options {
+  margin-top: 0.6rem;
+  grid-column: 1 / span 3;
+  color: #666;
+}
