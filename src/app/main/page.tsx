@@ -1,14 +1,15 @@
 'use client';
 import styles from './main.module.scss';
 import Button from '@/components/Button';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { IsOptionType, OrderType, SelectCoffeeType } from '@/types';
 import { adeMenu, coffeeMenu, drinksMenu, teaMenu } from '@/api/menu';
 import { CoffeeOptionModal } from '@/containers/CoffeeOptionModal';
 import { MenuTabPanel } from '@/containers/MenuTabPanel';
 import { OrderList } from '@/containers/OrderList';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { useRecoilState } from 'recoil';
+import { orderState } from '@/store/orderAtom';
 
 const tabMenus: string[] = ['커피', '주스', '에이드', '티'];
 
@@ -24,7 +25,7 @@ export default function Main() {
     ice: false,
     drinkCount: 1,
   }); // 모달에서 선택한 커피 옵션
-  const [order, setOrder] = useState<OrderType[]>([]); // 주문 리스트
+  const [orders, setOrders] = useRecoilState<OrderType[]>(orderState); // 주문 리스트
 
   /**
    * 메뉴 탭 액티브
@@ -71,7 +72,7 @@ export default function Main() {
       if (isOption.syrup) calcPrice += 500;
 
       // 주문리스트에 같은 옵션의 주문이 있는지 확인
-      const someIdx = order.findIndex(
+      const someIdx = orders.findIndex(
         (item) =>
           item.name === selectCoffee.name &&
           item.ice === isOption.ice &&
@@ -83,7 +84,7 @@ export default function Main() {
 
       if (someIdx > -1) {
         // 기존 주문에 추가
-        setOrder((prev) => {
+        setOrders((prev) => {
           const updatedOrder = [...prev];
           updatedOrder[someIdx] = {
             ...updatedOrder[someIdx],
@@ -94,7 +95,7 @@ export default function Main() {
       } else {
         // 주문리스트에 주문 내용 추가
         const newOrder = { ...selectCoffee, ...isOption, price: calcPrice };
-        setOrder((prev) => [...prev, newOrder]);
+        setOrders((prev) => [...prev, newOrder]);
       }
       headleResetOption();
     }
@@ -110,12 +111,12 @@ export default function Main() {
   const handleMenuCount = (item: OrderType, someIdx: number, state: string) => {
     // 0 일떄 주문리스트에서 삭제
     if (state === 'decrease' && item.drinkCount - 1 === 0) {
-      setOrder(order.filter((order) => order !== item));
+      setOrders(orders.filter((order) => order !== item));
       return;
     }
 
     // 주문리스트에서 커피 추가/삭제시 가격 변경
-    setOrder((prev) => {
+    setOrders((prev) => {
       const updatedOrder = [...prev];
       updatedOrder[someIdx] = {
         ...updatedOrder[someIdx],
@@ -134,11 +135,16 @@ export default function Main() {
    * @returns
    */
   const calcTotalPrice = () => {
-    return order
+    return orders
       .map((item) => item.price)
       .reduce((a, v) => a + v, 0)
       .toLocaleString();
   };
+
+  // 페이지 로드시 주문리스트 초기화
+  useEffect(() => {
+    setOrders([]);
+  }, []);
 
   return (
     <main className={styles.main}>
@@ -176,7 +182,7 @@ export default function Main() {
         {/* 주문리스트 */}
         <div className={styles.orderContainer}>
           <ul className={styles.calc}>
-            <OrderList order={order} handleMenuCount={handleMenuCount} />
+            <OrderList handleMenuCount={handleMenuCount} />
           </ul>
           <div className={styles.totalCalc}>
             <p>총 결제 금액</p>
@@ -184,9 +190,14 @@ export default function Main() {
               <span>{calcTotalPrice()}</span> 원
             </p>
           </div>
-          <Button title="전체삭제" style="defaultBtn" onClick={() => setOrder([])} />
-
-          <Button title="주문하기" onClick={() => router.push('/orderComplate')} />
+          <Button title="전체삭제" style="defaultBtn" onClick={() => setOrders([])} />
+          <Button
+            title="주문하기"
+            onClick={() => {
+              if (orders.length === 0) return alert('상품을 담아주세요');
+              router.push('/orderConfirm');
+            }}
+          />
         </div>
       </section>
 

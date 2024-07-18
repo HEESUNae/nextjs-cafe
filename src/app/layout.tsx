@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Link from 'next/link';
 import Image from 'next/image';
+import RecoilRootProvider from '@/store/RecoilRootProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -27,7 +28,7 @@ export default function RootLayout({
             </h1>
           </div>
         </header>
-        {children}
+        <RecoilRootProvider>{children}</RecoilRootProvider>
       </body>
     </html>
   );

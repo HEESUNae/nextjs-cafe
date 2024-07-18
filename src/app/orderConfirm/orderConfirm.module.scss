@@ -1,0 +1,39 @@
+.main {
+  width: 80rem;
+  margin: 0 auto;
+  .contentsWrap {
+    padding: 6rem 0;
+  }
+  h2 {
+    font-size: 2.4rem;
+    font-weight: 600;
+  }
+  h3 {
+    font-size: 1.6rem;
+  }
+  .orderListWrap {
+    border: 0.1rem solid #ddd;
+    min-height: 40rem;
+    margin: 2rem 0;
+  }
+  ul {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    align-items: start;
+    padding: 1rem 0;
+
+    li {
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      .options {
+        margin-top: 0.6rem;
+        color: #666;
+      }
+      .price {
+        font-weight: 600;
+        margin-top: 1rem;
+      }
+    }
+  }
+}

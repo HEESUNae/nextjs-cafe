@@ -3,23 +3,25 @@ import React from 'react';
 import styles from './orderList.module.scss';
 import Button from '@/components/Button';
 import Image from 'next/image';
+import { useRecoilValue } from 'recoil';
+import { orderState } from '@/store/orderAtom';
 
 interface OrderListProps {
-  order: OrderType[];
   handleMenuCount: (item: OrderType, someIdx: number, state: string) => void;
 }
 
 // 주문 리스트
-export const OrderList = ({ order, handleMenuCount }: OrderListProps) => {
+export const OrderList = ({ handleMenuCount }: OrderListProps) => {
+  const orders = useRecoilValue(orderState);
   return (
     <>
-      {order.length === 0 && (
+      {orders.length === 0 && (
         <div className={styles.defaultOrderList}>
           <Image src={'/images/mug.png'} width={60} height={60} alt="" />
           <p>주문 리스트가 비었습니다.</p>
         </div>
       )}
-      {order.map((item, idx) => (
+      {orders.map((item, idx) => (
         <li key={idx}>
           <h3>
             {item.name} {item.temperature}
